@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<configuration>
+<sistema>
+	<nombre>OJ</nombre>
+</sistema>
+<db>
+  	<host>25.69.13.204</host>
+  	<port>1521</port>
+  	<service>xe</service>
+  	<user>SGTPENAL</user>
+  	<pass>CIDEJ2020</pass>
+  	<schema>SGTPENAL</schema>
+  	<version>1.0.0.0</version>
+ </db>
+ 
+</configuration>
