@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Convertidor de Moneda</title>
+  <style>
+
+    :root {
+      --bg-page: #f2f4f7;
+      --bg-card: #ffffff;
+      --accent: #3b82f6;
+      --text-main: #1f2937;
+      --text-secondary: #4b5563;
+      --border: #e5e7eb;
+      --error: #ef4444;
+      --success: #10b981;
+      --transition-speed: 0.2s;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+
+    .container {
+      background-color: var(--bg-card);
+      max-width: 400px;
+      width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+      padding: 2rem;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+      color: var(--accent);
+    }
+
+    .form-group {
+      text-align: left;
+      margin-top: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      transition: color var(--transition-speed);
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 1rem;
+      color: var(--text-main);
+      transition: border-color var(--transition-speed);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .form-group input[readonly] {
+      background-color: #f9fafb;
+      cursor: default;
+    }
+
+    .form-group input::-webkit-inner-spin-button,
+    .form-group input::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    button {
+      margin-top: 1.5rem;
+      width: 100%;
+      padding: 0.6rem 0;
+      background-color: var(--accent);
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color var(--transition-speed), transform var(--transition-speed);
+    }
+
+    button:disabled {
+      background-color: var(--border);
+      cursor: not-allowed;
+    }
+
+    button:hover:not(:disabled) {
+      background-color: #2563eb;
+      transform: translateY(-1px);
+    }
+
+    .spinner {
+      display: none;
+      margin: 1rem auto 0;
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    #mensaje {
+      margin-top: 1rem;
+      font-size: 0.95rem;
+      min-height: 1.2rem;
+      color: var(--error);
+      transition: color var(--transition-speed);
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 1.5rem;
+      }
+      h2 {
+        font-size: 1.3rem;
+      }
+      button {
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Convertidor de Moneda</h2>
+
+    <div class="form-group">
+      <label for="fecha">Fecha:</label>
+      <input type="date" id="fecha" />
+    </div>
+
+    <div class="form-group">
+      <label for="monto">Monto:</label>
+      <input type="number" id="monto"  step="0.01" />
+    </div>
+
+    <div class="form-group">
+      <label for="tipo">Tipo de conversión:</label>
+      <select id="tipo">
+        <option value="1">1: Dólares a Quetzales</option>
+        <option value="2">2: Quetzales a Dólares</option>
+      </select>
+    </div>
+
+
+    <button id="btnCalcular">Calcular</button>
+    <div class="spinner" id="spinner"></div>
+    <div class="form-group">
+      <label for="resultadoValor">Resultado:</label>
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <input type="text" id="resultadoValor" readonly placeholder="---" />
+        <span id="resultadoMoneda" style="font-size: 1.1rem; font-weight: bold;"></span>
+      </div>
+    </div>
+    <div id="mensaje"></div>
+  </div>
+
+  <script>
+    const btnCalcular      = document.getElementById('btnCalcular');
+    const spinner          = document.getElementById('spinner');
+    const resultadoValorEl = document.getElementById('resultadoValor');
+    const resultadoMoneda  = document.getElementById('resultadoMoneda');
+    const mensajeEl        = document.getElementById('mensaje');
+
+    btnCalcular.addEventListener('click', () => {
+      mensajeEl.textContent = '';
+      mensajeEl.style.color = varGet('--error');
+      resultadoValorEl.value = '';
+      resultadoMoneda.textContent = '';
+
+
+      const fechaInput = document.getElementById('fecha').value;
+      const montoInput = document.getElementById('monto').value.trim();
+      const tipoInput  = document.getElementById('tipo').value;
+
+      if (!fechaInput) {
+        mensajeEl.textContent = 'Por favor, selecciona una fecha.';
+        return;
+      }
+      if (!montoInput || isNaN(montoInput) || Number(montoInput) <= 0) {
+        mensajeEl.textContent = 'Por favor, ingresa un monto válido.';
+        return;
+      }
+
+      btnCalcular.disabled = true;
+      spinner.style.display = 'block';
+      const apiUrl = `http://localhost:8082/BACKEND/webapi/Convertidor/fecha/${fechaInput}/monto/${montoInput}/tipo/${tipoInput}/Convertir`;
+
+      fetch(apiUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Código de error: ' + response.status);
+          }
+          return response.text();
+        })
+        .then(data => {
+
+          resultadoValorEl.value = data;
+          if (tipoInput === '1') {
+            resultadoMoneda.textContent = 'Q';
+          } else {
+            resultadoMoneda.textContent = '$';
+          }
+          mensajeEl.textContent = '';
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          mensajeEl.textContent = 'Ocurrió un error.';
+        })
+        .finally(() => {
+          spinner.style.display = 'none';
+          btnCalcular.disabled = false;
+        });
+    });
+
+    function varGet(variableName) {
+      return getComputedStyle(document.documentElement).getPropertyValue(variableName);
+    }
+  </script>
+</body>
+</html>

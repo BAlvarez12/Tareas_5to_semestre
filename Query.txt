@@ -1,0 +1,98 @@
+TABLA DE TIPOS DE CONVERSION
+
+CREATE TABLE TIPO_CONVERSION (
+  tipo_id       NUMBER(1)      PRIMARY KEY,
+  descripcion   VARCHAR2(30)   NOT NULL
+);
+
+INSERT INTO TIPO_CONVERSION (tipo_id, descripcion) VALUES (1, 'USD a GTQ');
+INSERT INTO TIPO_CONVERSION (tipo_id, descripcion) VALUES (2, 'GTQ a USD');
+COMMIT;
+
+
+
+
+
+
+
+TABLA DE TASAS DE CAMBIO
+
+CREATE TABLE TAZA_DE_CAMBIO (
+  fecha                   DATE           PRIMARY KEY,
+  tasa_cambio_dollar      NUMBER(12,4)   NOT NULL,  -- cuántos quetzales por dólar
+  tasa_cambio_quetzales   NUMBER(12,4)   NOT NULL   -- cuántos dólares por quetzal
+);
+
+
+
+
+
+
+
+
+PACKAGE CONVERSION MODENA
+
+
+CREATE OR REPLACE PACKAGE PKG_CONVERTIDOR_MONEDA AS 
+  PROCEDURE PROC_CONVERTIR_MONEDA(
+    p_fecha            IN  DATE,
+    p_monto            IN  NUMBER,
+    p_tipo_conversion  IN  NUMBER,
+    p_conversion       OUT NUMBER
+  );
+END PKG_CONVERTIDOR_MONEDA;
+/
+
+CREATE OR REPLACE PACKAGE BODY PKG_CONVERTIDOR_MONEDA AS
+
+  PROCEDURE PROC_CONVERTIR_MONEDA(
+    p_fecha            IN  DATE,
+    p_monto            IN  NUMBER,
+    p_tipo_conversion  IN  NUMBER,
+    p_conversion       OUT NUMBER
+  ) IS
+    v_taza_de_cambio NUMBER(12,4);
+  BEGIN
+    IF p_tipo_conversion = 1 THEN
+      SELECT tasa_cambio_dollar
+        INTO v_taza_de_cambio
+        FROM TAZA_DE_CAMBIO
+       WHERE fecha = p_fecha;
+      p_conversion := p_monto * v_taza_de_cambio;
+
+    ELSIF p_tipo_conversion = 2 THEN
+      SELECT tasa_cambio_quetzales
+        INTO v_taza_de_cambio
+        FROM TAZA_DE_CAMBIO
+       WHERE fecha = p_fecha;
+      p_conversion := p_monto * v_taza_de_cambio;
+
+    ELSE
+
+      p_conversion := 0;
+    END IF;
+  END PROC_CONVERTIR_MONEDA;
+
+END PKG_CONVERTIDOR_MONEDA;
+/
+
+
+
+
+DATA
+
+INSERT INTO TAZA_DE_CAMBIO VALUES (DATE '2025-05-28', 7.8125, 0.12802);
+INSERT INTO TAZA_DE_CAMBIO VALUES (DATE '2025-05-29', 7.8200, 0.12787);
+INSERT INTO TAZA_DE_CAMBIO VALUES (DATE '2025-05-30', 7.8250, 0.1278);
+INSERT INTO TAZA_DE_CAMBIO VALUES (DATE '2025-05-31', 7.8300, 0.1277);
+INSERT INTO TAZA_DE_CAMBIO VALUES (DATE '2025-06-01', 7.8350, 0.1276);
+INSERT INTO TAZA_DE_CAMBIO VALUES (DATE '2025-06-02', 7.8400, 0.1276);
+
+
+
+
+
+
+
+
+

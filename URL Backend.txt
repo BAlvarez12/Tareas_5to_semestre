@@ -1,0 +1,7 @@
+http://localhost:8082/BACKEND/webapi/Convertidor/fecha/2025-05-29/monto/33/tipo/1/Convertir
+
+
+
+
+
+http://localhost:8082/BACKEND/webapi/Convertidor/fecha/${fechaInput}/monto/${montoInput}/tipo/${tipoInput}/Convertir
